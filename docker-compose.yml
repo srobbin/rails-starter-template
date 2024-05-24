@@ -1,0 +1,44 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: dev
+    command: /bin/sh -c "rm -f tmp/pids/server.pid && bin/dev"
+    tty: true
+    env_file: ./.env
+    volumes:
+      - ./:/app/:rw,delegated
+      - bundle_data:/bundle
+      - node_data:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+      # - elasticsearch
+  db:
+    image: postgres:16.3
+    env_file: ./.env
+    command: postgres -c 'max_connections=250'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  # elasticsearch:
+  #   image: elasticsearch:7.17.10
+  #   volumes:
+  #     - elasticsearch_data:/usr/share/elasticsearch/data
+  #   environment:
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #     - discovery.type=single-node
+  #     - logger.level=WARN
+  redis:
+    image: redis:7
+    volumes:
+      - redis_data:/data
+volumes:
+  bundle_data:
+  # elasticsearch_data:
+  node_data:
+  postgres_data:
+  redis_data:
